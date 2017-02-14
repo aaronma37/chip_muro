@@ -1,0 +1,29 @@
+<package>
+  <name>turtlebot_camera_localization</name>
+  <version>0.0.0</version>
+  <description>This package contains a node to localize a robot from a top-down camera by finding a colored tag on the robot</description>
+
+  <maintainer email="kl.2015.kl@gmail.com">Katherine Liu</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>opencv2</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>uvc_camera</build_depend>
+  <build_depend>tf</build_depend>
+  
+  <run_depend>image_transport</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>opencv2</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>uvc_camera</run_depend>
+  <run_depend>tf</run_depend>
+
+</package>
+
+

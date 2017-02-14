@@ -1,0 +1,12 @@
+<launch>
+
+<arg name="map_file" default="$(find turtlebot_deployment)/maps/lab_maze.yaml"/>
+
+<remap from="map" to="/map"/>
+
+<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >
+    <param name="frame_id" value="/map"/>
+</node>
+
+</launch>
+

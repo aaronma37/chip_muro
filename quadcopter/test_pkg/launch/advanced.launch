@@ -1,0 +1,103 @@
+<launch>
+
+<!-- EKF -->
+
+
+<node pkg="test_pkg" type="slider_multiple" name="slider_multiple">
+</node>
+
+
+<node pkg="test_pkg" type="deserializeForAndroid" name="deserialize">
+</node>
+
+
+
+
+<!--CONTROLS FOR TURTLEBOTS-->
+
+<group ns="michelangelo">
+<node pkg="test_pkg" type="goto" name="goto_michelangelo">
+</node>
+</group>
+
+
+<group ns="donatello">
+<node pkg="test_pkg" type="goto" name="goto_donatello">
+</node>
+</group>
+
+
+<group ns="raphael">
+<node pkg="test_pkg" type="goto" name="goto_bernini">
+</node>
+</group>
+
+
+<group ns="leonardo">
+<node pkg="test_pkg" type="goto" name="goto_michelangelo" output="screen">
+</node>
+</group>
+
+
+<group ns="boticelli">
+<node pkg="test_pkg" type="goto" name="goto_donatello">
+</node>
+</group>
+
+
+<group ns="giotto">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+
+<group ns="bellini">
+<node pkg="test_pkg" type="goto" name="goto_michelangelo" output="screen">
+</node>
+</group>
+
+
+<group ns="ghiberti">
+<node pkg="test_pkg" type="goto" name="goto_donatello" output="screen">
+</node>
+</group>
+
+
+<group ns="masaccio">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+
+<group ns="titian">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+<group ns="picasso">
+<node pkg="test_pkg" type="goto" name="goto_donatello" output="screen">
+</node>
+</group>
+
+
+<group ns="dali">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+
+<group ns="goya">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+
+
+
+<node pkg="test_pkg" type="CGR" name="centroidGeneratorRos" output="screen">
+</node>
+
+
+
+
+</launch>

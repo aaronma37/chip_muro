@@ -1,0 +1,69 @@
+<launch>
+
+<arg name="robot" default="$(env TURTLEBOT_NAME)"/>
+<arg name="hold_time"           default="8.0"/>
+<arg name="resolution"          default="1"/>
+<arg name="turn_speed" 		    default="0.3"/>
+<arg name="drive_speed" 	    default="0.2"/>
+<arg name="angle_tolerance" 	default="0.5"/>
+<arg name="distance_tolerance" 	default="0.10"/>
+
+<group ns="$(arg robot)">
+    <param name="tf_prefix" value="$(arg robot)"/>
+
+    <!-- Minimal -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+    <param name="mobile_base/base_frame" value="$(arg robot)/base_footprint"/>
+    <param name="mobile_base/odom_frame" value="$(arg robot)/odom"/>
+    
+    <!-- 3d sensor -->
+    <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
+      <arg name="depth_registration" value="false"/>
+      <arg name="scan_topic" value="scan"/>
+      <arg name="rgb_processing" value="false" />
+      <arg name="depth_processing" value="false" />
+    </include>
+
+    <!-- Communication node
+    <node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+        <param name="robot_name" value="$(arg robot)"/>
+    </node>  -->
+
+    <!-- Deployment node 
+    <node pkg="turtlebot_deployment" type="simple_deployment" name="deployment" output="screen">
+      <param name="robot_name" value="$(arg robot)"/>
+      <param name="hold_time" value="$(arg hold_time)"/>
+      <param name="resolution" value="$(arg resolution)"/>
+    </node>  -->
+
+    <!-- AMCL -->
+    <remap from="map" to="/map" />
+    <arg name="initial_pose_x" default="17.0"/> <!-- Use 17.0 for willow's map in simulation -->
+    <arg name="initial_pose_y" default="17.0"/> <!-- Use 17.0 for willow's map in simulation -->
+    <arg name="initial_pose_a" default="0.0"/>
+    <include file="$(find turtlebot_navigation)/launch/includes/amcl.launch.xml">
+      <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+      <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+      <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+      <arg name="scan_topic" value="scan"/>
+      <arg name="odom_frame_id" value="$(arg robot)/odom"/>
+      <arg name="base_frame_id" value="$(arg robot)/base_footprint"/>
+      <arg name="global_frame_id" value="/map"/>
+    </include>
+
+
+    <!-- Move Base 
+    <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml"/>
+    <param name="move_base/local_costmap/robot_base_frame" value="$(arg robot)/base_footprint"/>
+    <param name="move_base/global_costmap/robot_base_frame" value="$(arg robot)/base_footprint"/>
+    <param name="move_base/local_costmap/global_frame" value="/map"/>
+    <param name="move_base/global_costmap/global_frame" value="/map"/>
+    <param name="move_base/local_costmap/transform_tolerance" value="5"/>
+    <param name="move_base/global_costmap/transform_tolerance" value="5"/>
+    -->
+
+
+
+</group>
+
+</launch>

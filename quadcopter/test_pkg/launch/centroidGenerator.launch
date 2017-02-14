@@ -1,0 +1,7 @@
+<launch>
+
+<!-- EKF -->
+<node pkg="test_pkg" type="centroidGeneratorRos" name="centroidGeneratorRos" output="screen">
+</node>
+
+</launch>

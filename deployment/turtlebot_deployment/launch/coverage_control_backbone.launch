@@ -1,0 +1,11 @@
+<launch>
+
+    <!-- Map server -->
+    <include file="$(find turtlebot_deployment)/launch/map_server.launch">
+    </include>
+
+    <!-- Localization -->
+    <include file="$(find turtlebot_camera_localization)/launch/localization_demo.launch">
+    </include>
+
+</launch>

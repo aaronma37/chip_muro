@@ -1,0 +1,14 @@
+<launch>
+
+
+
+  <!-- Camera 2-->
+  <include file="$(find turtlebot_camera_localization)/launch/usb_cam_launch.launch"/>
+
+
+  <!-- Localization -->
+  <node name="localization2" pkg="turtlebot_camera_localization" type="camera_localization2"/>
+
+
+
+</launch>

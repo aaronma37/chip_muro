@@ -1,0 +1,305 @@
+<launch>
+<arg name="robot" default="donatello"/>
+<arg name="EKF_on" default="1"/>
+<arg name="hold_time" default="8.0"/>
+<arg name="resolution" default="1"/>
+<arg name="turn_speed" default="0.3"/>
+<arg name="send" default="1"/>
+<arg name="drive_speed" default="0.2"/>
+<arg name="angle_tolerance" default="0.5"/>
+<arg name="radius" default="50"/>
+<arg name="distance_tolerance" default="0.10"/>
+<arg name="show_cells_" default="false"/>
+
+<group ns="donatello">
+<param name="tf_prefix" value="$(arg robot)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+<arg name="robot2" default="raphael"/>
+<group ns="raphael">
+<param name="tf_prefix" value="$(arg robot2)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication"  >
+<param name="robot_name" value="$(arg robot2)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter" output="screen">
+<param name="robot_name"	value="$(arg robot2)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+<arg name="robot3" default="michelangelo"/>
+<group ns="michelangelo">
+<param name="tf_prefix" value="$(arg robot3)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot3)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot3)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+<arg name="robot5" default="leonardo"/>
+<group ns="leonardo">
+<param name="tf_prefix" value="$(arg robot5)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot5)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot5)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+<arg name="robot6" default="boticelli"/>
+<group ns="boticelli">
+<param name="tf_prefix" value="$(arg robot6)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot6)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot6)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+
+<arg name="robot7" default="giotto"/>
+<group ns="giotto">
+<param name="tf_prefix" value="$(arg robot7)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot7)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot7)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+<arg name="robot8" default="bellini"/>
+<group ns="bellini">
+<param name="tf_prefix" value="$(arg robot8)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot8)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot8)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+
+<arg name="robot9" default="ghiberti"/>
+<group ns="ghiberti">
+<param name="tf_prefix" value="$(arg robot9)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot9)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot9)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+
+
+<arg name="robot10" default="masaccio"/>
+<group ns="masaccio">
+<param name="tf_prefix" value="$(arg robot10)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot10)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot10)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+<arg name="robot11" default="titian"/>
+<group ns="titian">
+<param name="tf_prefix" value="$(arg robot11)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot11)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot11)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+
+<arg name="robot12" default="picasso"/>
+<group ns="picasso">
+<param name="tf_prefix" value="$(arg robot12)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot12)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot12)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+<arg name="robot13" default="dali"/>
+<group ns="dali">
+<param name="tf_prefix" value="$(arg robot13)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot13)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot13)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+<arg name="robot14" default="goya"/>
+<group ns="goya">
+<param name="tf_prefix" value="$(arg robot14)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot14)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter">
+<param name="robot_name"	value="$(arg robot14)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+
+
+
+
+
+
+<node pkg="test_pkg" type="quadcopter_ekf_multiple" name="quadcopter_ekf"">
+</node>
+</launch>

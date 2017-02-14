@@ -1,0 +1,51 @@
+
+
+#include <iostream>
+#include <stdio.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <tf2_msgs/TFMessage.h>
+#include "geometry_msgs/TransformStamped.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
+#include <std_msgs/Empty.h>
+#include <sensor_msgs/Image.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <tf/tf.h>
+#include <fstream>
+#include <math.h>
+#include <time.h> 
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <vector>
+#include <stdlib.h>
+#include "std_msgs/String.h"
+#include <std_msgs/Float64.h>
+#include <sstream>
+
+    ros::Subscriber ardrone1_sub;
+    ros::Publisher ardrone1_pub;
+
+void ar1_relay(const sensor_msgs::Image::ConstPtr& img)
+{
+	ardrone1_pub.publish(img);
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "relay"); //Ros Initialize
+    ros::start();
+
+
+    ros::NodeHandle n;
+
+    ardrone1_sub = n.subscribe<sensor_msgs::Image>("/ardrone/image_raw", 1, ar1_relay);
+    ardrone1_pub = n.advertise<sensor_msgs::Image>("/camera/image_raw", 1000, true);
+
+    while (ros::ok()) 
+    {
+        ros::spin();
+    }
+}
+

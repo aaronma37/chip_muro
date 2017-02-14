@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg5866"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="dial.svg"
+   inkscape:export-filename="/home/aaron/catkin_ws/src/ucsd_ros_project/Quadcopter_android/app/src/main/res/drawable/dial.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs5868">
+    <filter
+       id="filter5810"
+       inkscape:label="Bloom"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Soft, cushion-like bevel with matte highlights"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         id="feGaussianBlur5812"
+         result="result1"
+         in="SourceAlpha"
+         stdDeviation="0.87947826086956515" />
+      <feSpecularLighting
+         id="feSpecularLighting5814"
+         result="result0"
+         specularExponent="31.602409638554217"
+         specularConstant="5.2469135802469129"
+         surfaceScale="189.87341772151899"
+         lighting-color="rgb(29,227,237)">
+        <feDistantLight
+           id="feDistantLight5816"
+           azimuth="270"
+           elevation="33" />
+      </feSpecularLighting>
+      <feComposite
+         id="feComposite5818"
+         in2="SourceAlpha"
+         result="result6"
+         operator="in" />
+      <feMorphology
+         id="feMorphology5820"
+         radius="8.9041095890410951"
+         operator="dilate" />
+      <feGaussianBlur
+         id="feGaussianBlur5822"
+         result="result11"
+         stdDeviation="5.7" />
+      <feDiffuseLighting
+         id="feDiffuseLighting5824"
+         surfaceScale="-289.97290039"
+         result="result3"
+         diffuseConstant="2"
+         in="result1">
+        <feDistantLight
+           id="feDistantLight5840"
+           azimuth="187"
+           elevation="196" />
+      </feDiffuseLighting>
+      <feBlend
+         id="feBlend5828"
+         in2="SourceGraphic"
+         result="result7"
+         mode="multiply"
+         in="result3" />
+      <feComposite
+         id="feComposite5830"
+         in2="SourceAlpha"
+         in="result7"
+         operator="in"
+         result="result91" />
+      <feBlend
+         id="feBlend5832"
+         in2="result91"
+         result="result9"
+         mode="lighten"
+         in="result6" />
+      <feComposite
+         id="feComposite5834"
+         in2="result9"
+         in="result11" />
+    </filter>
+    <filter
+       id="filter5995"
+       inkscape:label="Diffuse light"
+       inkscape:menu="ABCs"
+       inkscape:menu-tooltip="Basic diffuse bevel to use for building textures"
+       color-interpolation-filters="sRGB">
+      <feGaussianBlur
+         id="feGaussianBlur5997"
+         stdDeviation="6"
+         in="SourceGraphic"
+         result="result0" />
+      <feDiffuseLighting
+         id="feDiffuseLighting5999"
+         diffuseConstant="1.7964071856287425"
+         surfaceScale="-320.75471698113211"
+         result="result5"
+         kernelUnitLength="2.6646853146853147">
+        <feDistantLight
+           id="feDistantLight6001"
+           elevation="336"
+           azimuth="244" />
+      </feDiffuseLighting>
+      <feComposite
+         id="feComposite6003"
+         in2="SourceGraphic"
+         k1="1"
+         in="result5"
+         result="result4"
+         operator="arithmetic"
+         k2="0"
+         k3="0.6" />
+    </filter>
+    <filter
+       id="filter6059"
+       inkscape:label="Matte jelly"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       inkscape:menu="ABCs"
+       inkscape:menu-tooltip="Bulging, matte jelly covering"
+       color-interpolation-filters="sRGB">
+      <feColorMatrix
+         id="feColorMatrix6061"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.85 0"
+         result="result0"
+         in="SourceGraphic" />
+      <feGaussianBlur
+         id="feGaussianBlur6063"
+         in="SourceAlpha"
+         stdDeviation="8.1172972972972968" />
+      <feSpecularLighting
+         id="feSpecularLighting6065"
+         surfaceScale="3.7000000000000002"
+         specularConstant="0.9"
+         specularExponent="25"
+         result="result1">
+        <feDistantLight
+           id="feDistantLight6067"
+           elevation="60"
+           azimuth="225" />
+      </feSpecularLighting>
+      <feComposite
+         id="feComposite6069"
+         in2="result0"
+         operator="atop" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="357.76869"
+     inkscape:cy="702.76398"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="2495"
+     inkscape:window-height="1416"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5871">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#00ffff;fill-opacity:1;stroke:none;filter:url(#filter6059)"
+       d="m 368.57142,199.50505 -125,100 -124.99999,100 0,499.99998 499.99999,0 0,-499.99998 -125,-100 -125,-100 z"
+       id="rect5446"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/aaron/catkin_ws/src/ucsd_ros_project/quadcopter/test_pkg/src/dial.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<launch>
+
+<!-- EKF -->
+<node pkg="test_pkg" type="quadcopter_ekf" name="quadcopter_ekf" >
+</node>
+
+<node pkg="test_pkg" type="slider" name="slider" output="screen" >
+</node>
+
+
+</launch>

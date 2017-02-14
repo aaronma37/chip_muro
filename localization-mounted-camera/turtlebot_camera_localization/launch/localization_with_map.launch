@@ -1,0 +1,13 @@
+<launch>
+
+  <!-- Map server -->
+  <arg name="map_file" default="$(find blueBot)/maps/lab_workspace.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!-- Camera -->
+  <include file="$(find blueBot)/launch/uvcCameraLaunch.launch"/>
+
+  <!-- Localization -->
+  <node name="blueBot" pkg="blueBot" type="blueBot"/>
+
+</launch>

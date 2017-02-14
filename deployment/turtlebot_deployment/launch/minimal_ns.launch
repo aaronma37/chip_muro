@@ -1,0 +1,14 @@
+<launch>
+
+<arg name="robot" default="$(env ROBOT)"/>
+
+  <group ns="$(arg robot)">
+
+    <!-- Minimal -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+    <param name="mobile_base/base_frame" value="$(arg robot)/base_footprint"/>
+    <param name="mobile_base/odom_frame" value="$(arg robot)/odom"/>
+
+  </group>
+
+</launch>

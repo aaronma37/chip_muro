@@ -1,0 +1,42 @@
+<launch>
+
+<!--Formation-->
+  <node name="formation_stablization_person" pkg="test_pkg" type="formation_stabilization_person.py" output="screen">
+		<remap from="/turtle0/goal_pose" to="/ardrone1/relativeGoal"/>
+		<remap from="/turtle1/goal_pose" to="/ardrone2/relativeGoal"/>
+		<remap from="/turtle2/goal_pose" to="/ardrone3/relativeGoal"/>
+		<remap from="/turtle3/goal_pose" to="/ardrone4/relativeGoal"/>
+		<remap from="/turtle4/goal_pose" to="/ardrone5/relativeGoal"/>
+
+		<remap from="/turtle0/pose" to="/ardrone1/afterKalman"/>
+		<remap from="/turtle1/pose" to="/ardrone2/afterKalman"/>
+		<remap from="/turtle2/pose" to="/ardrone3/afterKalman"/>
+		<remap from="/turtle3/pose" to="/ardrone4/afterKalman"/>
+		<remap from="/turtle4/pose" to="/ardrone5/afterKalman"/>
+  </node>
+
+<node pkg="test_pkg" type="formation_translation_person_quadcopter" name="formationtranslation">
+</node>
+
+<group ns="ardrone1">
+<node pkg="test_pkg" type="slider" name="slider" output="screen">
+</node>
+</group>
+
+<group ns="ardrone2">
+<node pkg="test_pkg" type="slider" name="slider">
+</node>
+</group>
+
+
+<group ns="ardrone3">
+<node pkg="test_pkg" type="slider" name="slider">
+</node>
+</group>
+
+<group ns="ardrone4">
+<node pkg="test_pkg" type="slider" name="slider">
+</node>
+</group>
+
+</launch>

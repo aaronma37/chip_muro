@@ -1,0 +1,44 @@
+<launch>
+
+<arg name="robot" default="$(env ROBOT)"/>
+<arg name="hold_time" default="8.0"/>
+<arg name="resolution" default="0.01"/>
+<arg name="turn_speed" 		default="0.3"/>
+<arg name="drive_speed" 	default="0.2"/>
+<arg name="angle_tolerance" 	default="0.5"/>
+<arg name="distance_tolerance" 	default="0.10"/>
+
+<group ns="$(arg robot)">
+    <param name="tf_prefix" value="$(arg robot)"/>
+
+    <!-- Minimal -->
+    <include file="$(find turtlebot_bringup)/launch/minimal.launch">
+    </include>
+    <param name="mobile_base/base_frame" value="$(arg robot)/base_footprint"/>
+    <param name="mobile_base/odom_frame" value="$(arg robot)/odom"/>
+
+    <!-- Communication node -->
+    <node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+        <param name="robot_name" value="$(arg robot)"/>
+    </node>  
+
+    <!-- Deployment node -->
+    <node pkg="turtlebot_deployment" type="simple_deployment" name="deployment" output="screen">
+        <param name="robot_name" value="$(arg robot)"/>
+        <param name="hold_time" value="$(arg hold_time)"/>
+        <param name="resolution" value="$(arg resolution)"/>
+    </node>  
+
+    <!-- Navigation Stack -->
+    <remap from="map" to="/map" />
+    <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml"/>
+      <param name="move_base/local_costmap/robot_base_frame" value="base_footprint"/>
+      <param name="move_base/global_costmap/robot_base_frame" value="base_footprint"/>
+
+	<!-- <param name="move_base/local_costmap/global_frame" value="/map"/>
+	<param name="move_base/global_costmap/global_frame" value="/map"/> -->
+
+
+</group>
+
+</launch>

@@ -1,0 +1,9 @@
+<launch>
+
+<node pkg="test_pkg" type="hover" name="hover" output="screen">
+</node>
+
+<node pkg="test_pkg" type="flight" name="flight" output="screen">
+</node>
+
+</launch>

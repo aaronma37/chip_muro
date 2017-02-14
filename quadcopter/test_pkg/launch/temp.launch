@@ -1,0 +1,21 @@
+<launch>
+
+
+
+
+<group ns="masaccio">
+<node pkg="test_pkg" type="goto" name="goto_bernini" output="screen">
+</node>
+</group>
+
+
+
+
+
+<node pkg="test_pkg" type="CoMGeneratorRos" name="centroidGeneratorRos" output="screen">
+</node>
+
+
+
+
+</launch>

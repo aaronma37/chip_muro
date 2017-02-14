@@ -1,0 +1,9 @@
+<launch>
+
+<node pkg="test_pkg" type="path_follower" name="path_follower" output="screen">
+</node>
+
+<node pkg="test_pkg" type="pf_test" name="pf_test" output="screen">
+</node>
+
+</launch>

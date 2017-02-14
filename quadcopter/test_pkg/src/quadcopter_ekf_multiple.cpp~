@@ -1,0 +1,779 @@
+#include <iostream>
+#include <stdio.h>
+#include <string>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <tf2_msgs/TFMessage.h>
+#include "geometry_msgs/TransformStamped.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
+#include "ardrone_autonomy/Navdata.h"
+#include "turtlebot_deployment/PoseWithName.h"
+#include <tf/tf.h>
+#include <fstream>
+#include <math.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "eigen/Eigen/Dense"
+#include <vector>
+#include <stdlib.h>
+#include "std_msgs/String.h"
+#include <std_msgs/Float64.h>
+#include <sstream>
+/* -----------------------------------------------------------------------------------------
+This file is for building an Extended Kalman filter for multiple drones.
+
+*/
+using namespace std;
+using namespace Eigen;
+using Eigen::MatrixXd;
+
+// Declare matrixes used in the Kalman Filter
+int k=0;
+const int num=50;
+Matrix4f Q= Matrix4f::Zero();
+Matrix4f R= Matrix4f::Zero();
+Matrix4f W= Matrix4f::Identity();
+Matrix4f I= Matrix4f::Identity();
+Matrix4f P= Matrix4f::Zero();
+Matrix4f H= Matrix4f::Identity();
+MatrixXf X[num];      
+MatrixXf V(3,1);
+MatrixXf VZ(3,1);
+MatrixXf Vmatrix[num];
+Matrix4f A;
+Matrix4f K;
+VectorXf Z(4);
+
+const int MICHELANGELO_INDEX = 2;
+const int DONATELLO_INDEX = 3;
+const int RAPHAEL_INDEX = 4;
+const int LEONARDO_INDEX = 5;
+const int BOTICELLI_INDEX = 6;
+const int GIOTTO_INDEX = 7;
+const int BELLINI_INDEX = 8;
+const int GHIBERTI_INDEX = 9;
+const int MASACCIO_INDEX = 10;
+const int TITIAN_INDEX = 1;
+
+const int PICASSO_INDEX = 41;
+const int DALI_INDEX = 42;
+const int GOYA_INDEX = 43;
+
+
+    ros::Publisher ekf_Switch[num];
+    ros::Publisher voronoiDeploymentCTerm;
+    ros::Publisher linearObstacle;
+    ros::Publisher voronoiDeploymentKTerm;
+    ros::Publisher gauss_Boundary;
+    std_msgs::Float32 CTERM;
+    std_msgs::Float32 KTERM;
+
+// Position and movement messages
+geometry_msgs::PoseStamped measurementPose[num];
+turtlebot_deployment::PoseWithName spawn, kill;
+geometry_msgs::Twist twist[num];
+geometry_msgs::Twist measurementTwist[num];
+geometry_msgs::PoseStamped poseEstimation[num], obstaclePose;
+tf2_msgs::TFMessage twistEstimation;
+tf2_msgs::TFMessage poseEstimationTF;
+std_msgs::Bool ekfSwitcher;
+std_msgs::Bool boundaryFlag;
+
+// Keep track of Quadcopter state
+bool got_pose_[num], stationary, got_vel_[num];
+double theta,x,y;
+double T = 50; // ROS loop rate
+double T1[num];
+double T2[num];
+double xOld[num];
+bool obstacle=false;
+double yOld[num];
+bool   active[num];
+double vXTot=0;
+double vYTot=0;
+double transformScale=900;
+double transformX=301;
+double transformY=247;
+double vZTot=0;
+double zOld[num];
+double numb[num];
+
+int counter11 = 0;
+int dummyNumber=0;
+double yaw[num]; // FIXME: What is this for?
+
+// Updates position coordinates
+
+
+void clearAll()
+{
+sleep(3);
+ for (int i=0;i<num;i++){
+            poseEstimation[i].pose.position.x=0;
+            poseEstimation[i].pose.position.y=0;
+            poseEstimation[i].pose.position.z=0;
+            poseEstimation[i].pose.orientation=tf::createQuaternionMsgFromYaw(0);
+            T1[i]=ros::Time::now().toSec();
+            T2[i]=ros::Time::now().toSec();
+            got_pose_[i] = false;
+            Vmatrix[i].resize(5,3);
+            X[i].resize(4,1);
+            active[i]=false;
+	    poseEstimationTF.transforms[i].transform.rotation.w=1;
+            twistEstimation.transforms[i].transform.rotation.w=1;
+	    poseEstimationTF.transforms[i].header.frame_id="null";
+
+			poseEstimationTF.transforms[i].transform.translation.x=0;
+			poseEstimationTF.transforms[i].transform.translation.y=0;
+			poseEstimationTF.transforms[i].transform.translation.z=0;
+    }
+
+}
+
+
+void poseCallback(const tf2_msgs::TFMessage::ConstPtr& posePtr)
+{
+	
+    obstacle=false;
+    const tf2_msgs::TFMessage& msg=*posePtr;
+    if (msg.transforms[0].header.frame_id.compare("ORB_SLAM/World")==0){
+    
+    std::cout<<"pass";
+    if(msg.transforms[0].child_frame_id.compare("ORB_SLAM/Camera")==0){
+        k=0;
+    }
+    else if (msg.transforms[0].child_frame_id.compare("Typhoon")==0){
+        k=1;
+    }
+    else if (msg.transforms[0].child_frame_id.compare("Dummy")==0){
+		if (msg.transforms[0].transform.rotation.w==0){
+			dummyNumber++;
+        		std::ostringstream ss;
+        		ss << dummyNumber;
+        		string s = "dummy ";
+        		s+=ss.str();
+        		k=10+dummyNumber;
+        		poseEstimation[k].header.frame_id=s;
+		}
+		else if (msg.transforms[0].transform.rotation.w==100){
+			clearAll();
+			return;
+		}
+		else if(msg.transforms[0].transform.rotation.w==102){
+			CTERM.data=msg.transforms[0].transform.translation.x;
+			voronoiDeploymentCTerm.publish(CTERM);
+			return;
+		}
+		else if(msg.transforms[0].transform.rotation.w==101){
+			KTERM.data=msg.transforms[0].transform.translation.x;
+			voronoiDeploymentKTerm.publish(KTERM);
+			return;
+		}
+		else if(msg.transforms[0].transform.rotation.w>0 && msg.transforms[0].transform.rotation.w<50){
+
+
+			k=msg.transforms[0].transform.rotation.w;
+			spawn.pose.position.x=msg.transforms[0].transform.translation.z*transformScale+transformX;
+			spawn.pose.position.y=-msg.transforms[0].transform.translation.x*transformScale+transformY;	
+
+			
+			poseEstimation[k].pose.position.x=msg.transforms[0].transform.translation.x;
+            		poseEstimation[k].pose.position.y=msg.transforms[0].transform.translation.y;
+            		poseEstimation[k].pose.position.z=0;
+
+
+			poseEstimationTF.transforms[k].transform.translation.x=msg.transforms[0].transform.translation.x;
+			poseEstimationTF.transforms[k].transform.translation.y=msg.transforms[0].transform.translation.y;
+			poseEstimationTF.transforms[k].transform.translation.z=0;
+
+
+			spawn.pose.orientation.w=1;
+			spawn.name=poseEstimation[k].header.frame_id;
+			ekf_Switch[k].publish(spawn);
+
+
+
+			active[k]=true;
+			got_pose_[k]=true;
+			obstacle=true;
+			
+
+
+		}
+		else if(msg.transforms[0].transform.rotation.w<0){
+			k=-msg.transforms[0].transform.rotation.w;
+			active[k]=false;
+			got_pose_[k]=false;
+			obstacle=false;
+
+ekf_Switch[k].publish(kill);
+
+			poseEstimation[k].pose.position.x=0;
+            		poseEstimation[k].pose.position.y=0;
+            		poseEstimation[k].pose.position.z=0;
+
+			poseEstimationTF.transforms[k].transform.translation.x=0;
+			poseEstimationTF.transforms[k].transform.translation.y=0;
+			poseEstimationTF.transforms[k].transform.translation.z=0;
+
+
+
+		}
+		else if(msg.transforms[0].transform.rotation.w==201){
+			boundaryFlag.data=true;
+			gauss_Boundary.publish(boundaryFlag);
+		return;
+
+		}else if(msg.transforms[0].transform.rotation.w==202){
+			boundaryFlag.data=false;
+			gauss_Boundary.publish(boundaryFlag);
+		return;
+		}
+		else if (msg.transforms[0].transform.rotation.w==301){
+			obstaclePose.pose.position.x=msg.transforms[0].transform.translation.x;
+			obstaclePose.pose.position.y=msg.transforms[0].transform.translation.y;
+			obstaclePose.pose.orientation.x=msg.transforms[0].transform.translation.z;
+			obstaclePose.pose.orientation.y=msg.transforms[0].transform.rotation.y;
+			linearObstacle.publish(obstaclePose);
+			return;
+
+		}
+		else {
+			k=msg.transforms[0].transform.rotation.w;
+			obstacle=true;
+			poseEstimation[k].header.frame_id="obstacle";
+		}
+    }
+    else{
+        return;
+    }
+    got_pose_[k] = true;
+    active[k]=true;
+    measurementPose[k].header.frame_id=msg.transforms[0].child_frame_id;
+    xOld[k]=measurementPose[k].pose.position.x;
+    yOld[k]=measurementPose[k].pose.position.y;
+    zOld[k]=measurementPose[k].pose.position.z;
+    measurementPose[k].pose.position.x = msg.transforms[0].transform.translation.z;
+    measurementPose[k].pose.position.y = msg.transforms[0].transform.translation.x;
+    measurementPose[k].pose.position.z = -msg.transforms[0].transform.translation.y;
+    measurementPose[k].pose.orientation.x = msg.transforms[0].transform.rotation.z;
+    measurementPose[k].pose.orientation.y = msg.transforms[0].transform.rotation.x;
+    measurementPose[k].pose.orientation.z = -msg.transforms[0].transform.rotation.y;
+    if (obstacle==false){
+    		measurementPose[k].pose.orientation.w = msg.transforms[0].transform.rotation.w;
+	}
+    else{
+		measurementPose[k].pose.orientation.w = 1;
+	}
+
+
+    yaw[k] = tf::getYaw(measurementPose[k].pose.orientation);
+    
+    T1[k]=T2[k];
+    T2[k]=ros::Time::now().toSec();
+    }
+}
+
+void apCallback(const turtlebot_deployment::PoseWithName::ConstPtr& pwn)
+{
+    if(pwn ->name.compare("michelangelo")==0){
+        k=2;
+    }
+    else if (pwn ->name.compare("donatello")==0){
+        k=3;
+    }
+   else if (pwn ->name.compare("raphael")==0){
+        k=4;
+    }
+else if (pwn ->name.compare("leonardo")==0){
+        k=5;
+    }
+else if (pwn ->name.compare("boticelli")==0){
+        k=6;
+    }
+else if (pwn ->name.compare("giotto")==0){
+        k=7;
+    }
+else if (pwn ->name.compare("bellini")==0){
+        k=8;
+    }
+else if (pwn ->name.compare("ghiberti")==0){
+        k=9;
+    }
+else if (pwn ->name.compare("masaccio")==0){
+        k=10;
+    }
+else if (pwn ->name.compare("titian")==0){
+        k=1;
+    }
+
+else if (pwn ->name.compare("picasso")==0){
+        k=41;
+    }
+
+else if (pwn ->name.compare("dali")==0){
+        k=42;
+    }
+
+else if (pwn ->name.compare("goya")==0){
+        k=43;
+    }
+
+if (pwn -> pose.position.x==0 && pwn -> pose.position.y==0){
+    got_pose_[k] = true;
+    active[k]=false;
+
+			poseEstimation[k].pose.position.x=0;
+            		poseEstimation[k].pose.position.y=0;
+            		poseEstimation[k].pose.position.z=0;
+
+			poseEstimationTF.transforms[k].transform.translation.x=0;
+			poseEstimationTF.transforms[k].transform.translation.y=0;
+			poseEstimationTF.transforms[k].transform.translation.z=0;
+
+			measurementPose[k].header.frame_id=pwn ->name;
+    measurementPose[k].pose.position.x = 0;
+    measurementPose[k].pose.position.y = 0;
+    measurementPose[k].pose.position.z = 0;
+    measurementPose[k].pose.orientation.x = 0;
+    measurementPose[k].pose.orientation.y = 0;
+    measurementPose[k].pose.orientation.z = 0;
+    measurementPose[k].pose.orientation.w = 1;
+
+    yaw[k] = tf::getYaw(measurementPose[k].pose.orientation);
+
+}
+else{
+    got_pose_[k] = true;
+    active[k]=true;
+
+
+
+    measurementPose[k].header.frame_id=pwn ->name;
+    measurementPose[k].pose.position.x = (pwn -> pose.position.x-transformX)/transformScale;
+    measurementPose[k].pose.position.y = -(pwn -> pose.position.y-transformY)/transformScale;
+    measurementPose[k].pose.position.z = pwn -> pose.position.z/transformScale;
+    measurementPose[k].pose.orientation.x = pwn -> pose.orientation.x;
+    measurementPose[k].pose.orientation.y = pwn -> pose.orientation.y;
+    measurementPose[k].pose.orientation.z = pwn -> pose.orientation.z;
+    measurementPose[k].pose.orientation.w = pwn -> pose.orientation.w;
+
+    yaw[k] = tf::getYaw(measurementPose[k].pose.orientation);
+ }  
+}
+
+void mFlag(const std_msgs::Header::ConstPtr& headerPtr)
+{
+    if(headerPtr ->frame_id.compare("michelangelo")==0){
+        k=2;
+    }
+    else if (headerPtr->frame_id.compare("donatello")==0){
+        k=3;
+    }
+   else if (headerPtr->frame_id.compare("raphael")==0){
+        k=4;
+    }
+else if (headerPtr->frame_id.compare("leonardo")==0){
+        k=5;
+    }
+else if (headerPtr ->frame_id.compare("boticelli")==0){
+        k=6;
+    }
+else if (headerPtr ->frame_id.compare("giotto")==0){
+        k=7;
+    }
+else if (headerPtr ->frame_id.compare("bellini")==0){
+        k=8;
+    }
+else if (headerPtr ->frame_id.compare("ghiberti")==0){
+        k=9;
+    }
+else if (headerPtr ->frame_id.compare("masaccio")==0){
+        k=10;
+    }
+else if (headerPtr ->frame_id.compare("titian")==0){
+        k=1;
+    }
+else if (headerPtr ->frame_id.compare("picasso")==0){
+      k=41;
+ }
+else if (headerPtr ->frame_id.compare("dali")==0){
+       k=42;
+    }
+else if (headerPtr ->frame_id.compare("goya")==0){
+      k=43;
+    }
+
+poseEstimation[k].header.stamp=headerPtr->stamp;
+    
+}
+
+void imuCallback(const ardrone_autonomy::Navdata::ConstPtr& imuPtr)
+{
+    got_vel_[k] = true;
+std::cout<<imuPtr;
+    measurementTwist[k].linear.x= imuPtr->vx/1000;    
+    measurementTwist[k].linear.y= imuPtr->vy/1000;
+    measurementTwist[k].linear.z= imuPtr->vz/1000;
+}
+
+void iptCallback(const tf2_msgs::TFMessage::ConstPtr& ipt)
+{
+	for (int i =0;i<num;i++){
+		    	twist[i].linear.x=ipt->transforms[i].transform.translation.x;
+			twist[i].linear.y=ipt->transforms[i].transform.translation.y;
+			twist[i].linear.z=ipt->transforms[i].transform.translation.z;
+		    	twist[i].angular.z=ipt->transforms[i].transform.rotation.z;
+	}
+
+}
+
+
+
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "Quadcopter Extended Kalman Filter: version 1, ORB SLAM only"); //Ros Initialize
+    ros::start();
+    ros::Rate loop_rate(T); //Set Ros frequency to 50/s (fast)
+
+    ros::Time measuredOn(1.0);
+    ros::Time measuredOff(2.0);
+
+    // FIXME: Make variable names clearer or add comments next to them
+    ros::NodeHandle nh_, ph_, gnh_, ph("~");
+    ros::Subscriber pos_sub_ ;
+    ros::Subscriber ipt_sub_,ap_sub_ ,measured_sub_;
+    ros::Subscriber imu_sub_ ;
+    ros::Publisher gl_pub_ , vel_pub_, gl2_pub_;
+
+    spawn.pose.position.x = transformX;
+    spawn.pose.position.y = transformY;
+    
+
+
+    void poseCallback(const tf2_msgs::TFMessage::ConstPtr& pose);
+    void iptCallback(const tf2_msgs::TFMessage::ConstPtr&);
+    void imuCallback(const ardrone_autonomy::Navdata::ConstPtr&);
+    void clearAll();
+    // ROS stuff
+    // Other member variables
+    
+    stationary = false;
+    double ux=0;
+    double uy=0;
+    double vx=0;
+    double vy=0;
+    double uz=0;
+    double maxVelFactor=1.25;
+    
+    Q(0,0)=0;
+    Q(1,1)=0;
+    Q(2,2)=0;
+    Q(3,3)=0;
+    R(0,0)=.01;
+    R(1,1)=.01;
+    R(2,2)=.01;
+    R(3,3)=.01;
+    P(0,0)=1000;
+    P(1,1)=1000;
+    P(2,2)=1000;
+    P(3,3)=1000;
+    V(0)=0;
+    V(1)=0;
+    V(2)=0;
+    Z(0)=0;
+    Z(1)=0;
+    Z(2)=0;
+    Z(3)=0;
+    VZ(0)=0;
+    VZ(1)=0;
+    VZ(2)=0;
+    
+    
+    poseEstimation[0].header.frame_id="Gypsy Danger";
+    //poseEstimation[1].header.frame_id="Typhoon";
+    poseEstimation[5].header.frame_id="leonardo";
+    poseEstimation[2].header.frame_id="michelangelo";
+   poseEstimation[3].header.frame_id="donatello";
+    poseEstimation[9].header.frame_id="ghiberti";
+     poseEstimation[6].header.frame_id="boticelli";
+poseEstimation[8].header.frame_id="bellini";
+poseEstimation[7].header.frame_id="giotto";
+poseEstimation[4].header.frame_id="raphael";
+poseEstimation[1].header.frame_id="titian";
+poseEstimation[10].header.frame_id="masaccio";
+
+poseEstimation[41].header.frame_id="picasso";
+poseEstimation[42].header.frame_id="dali";
+poseEstimation[43].header.frame_id="goya";
+    poseEstimationTF.transforms.resize(num);
+    twistEstimation.transforms.resize(num);
+    for (int i=0;i<num;i++){
+		numb[i]=0;
+            poseEstimation[i].pose.position.x=0;
+            poseEstimation[i].pose.position.y=0;
+            poseEstimation[i].pose.position.z=0;
+            poseEstimation[i].pose.orientation=tf::createQuaternionMsgFromYaw(0);
+            T1[i]=ros::Time::now().toSec();
+            T2[i]=ros::Time::now().toSec();
+            got_pose_[i] = false;
+            Vmatrix[i].resize(5,3);
+            X[i].resize(4,1);
+            active[i]=false;
+	    poseEstimationTF.transforms[i].transform.rotation.w=1;
+            twistEstimation.transforms[i].transform.rotation.w=1;
+	    poseEstimationTF.transforms[i].header.frame_id="null";
+    }
+
+	geometry_msgs::PoseStamped zeroStamped;
+	
+    
+
+    pos_sub_= nh_.subscribe<tf2_msgs::TFMessage>("/tf", 25,poseCallback);
+    imu_sub_= nh_.subscribe<ardrone_autonomy::Navdata>("/ardrone/navdata", 1,imuCallback);
+    ipt_sub_=nh_.subscribe<tf2_msgs::TFMessage>("/cmd_vel",25,iptCallback);
+    ap_sub_=nh_.subscribe<turtlebot_deployment::PoseWithName>("/all_positions",25 ,apCallback);
+    measured_sub_=nh_.subscribe<std_msgs::Header>("/measurementFlag",25 ,mFlag);
+    gl_pub_ = gnh_.advertise<geometry_msgs::PoseStamped>("/poseEstimation", 1000, true);
+    gauss_Boundary = gnh_.advertise<std_msgs::Bool>("/gauss/boundaryFlag", 1000, true);
+    gl2_pub_ = gnh_.advertise<tf2_msgs::TFMessage>("/poseEstimationC", 1000, true);
+    vel_pub_ = gnh_.advertise<tf2_msgs::TFMessage>("/velocityEstimation", 1000, true);
+    linearObstacle=gnh_.advertise<geometry_msgs::PoseStamped>("linearObstacle",1000,true);
+    voronoiDeploymentCTerm = gnh_.advertise<std_msgs::Float32>("/voronoi/deploymentOptions/CTERM", 1000, true);
+    voronoiDeploymentKTerm = gnh_.advertise<std_msgs::Float32>("/voronoi/deploymentOptions/KTERM", 1000, true);
+
+ekf_Switch[MICHELANGELO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/michelangelo/toKalmanfilter", 1000, true);
+ekf_Switch[DONATELLO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/donatello/toKalmanfilter", 1000, true);
+ekf_Switch[RAPHAEL_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/raphael/toKalmanfilter", 1000, true);
+ekf_Switch[LEONARDO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/leonardo/toKalmanfilter", 1000, true);
+ekf_Switch[BOTICELLI_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/boticelli/toKalmanfilter", 1000, true);
+ekf_Switch[GIOTTO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/giotto/toKalmanfilter", 1000, true);
+ekf_Switch[BELLINI_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/bellini/toKalmanfilter", 1000, true);
+ekf_Switch[GHIBERTI_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/ghiberti/toKalmanfilter", 1000, true);
+ekf_Switch[MASACCIO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/masaccio/toKalmanfilter", 1000, true);
+ekf_Switch[TITIAN_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/titian/toKalmanfilter", 1000, true);
+ekf_Switch[PICASSO_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/picasso/toKalmanfilter", 1000, true);
+ekf_Switch[DALI_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/dali/toKalmanfilter", 1000, true);
+ekf_Switch[GOYA_INDEX]    = gnh_.advertise<turtlebot_deployment::PoseWithName>("/goya/toKalmanfilter", 1000, true);
+
+    while (ros::ok()) 
+    {
+        for (int i=0;i<num;i++){
+        got_pose_[i] = false;
+        got_vel_[i]  = false;
+        }        
+        ros::spinOnce();
+        for (int i=0;i<num;i++){
+            if (active[i]==true){
+                MatrixXf& b = Vmatrix[i];
+                MatrixXf& Xx = X[i];
+            
+			    //Conditionals
+			if (got_pose_[i] == true)
+			{
+			    cout<<"got_pose_: "<<got_pose_[i]<<"\n";
+			    R(0,0)=1;
+			    R(1,1)=1;
+			    R(2,2)=1;
+			    R(3,3)=1;
+			    
+			    
+			b(4,0)=b(3,0);
+			b(3,0)=b(2,0);
+			b(2,0)=b(1,0);
+			b(1,0)=b(0,0);
+			b(0,0)=(measurementPose[i].pose.position.x-xOld[i])/(T2[i]-T1[i]);
+		
+			b(4,1)=b(3,1);
+			b(3,1)=b(2,1);
+			b(2,1)=b(1,1);
+			b(1,1)=b(0,1);
+			b(0,1)=(measurementPose[i].pose.position.y-yOld[i])/(T2[i]-T1[i]);
+		
+			b(4,2)=b(3,2);
+			b(3,2)=b(2,2);
+			b(2,2)=b(1,2);
+			b(1,2)=b(0,2);
+			b(0,2)=(measurementPose[i].pose.position.z-zOld[i])/(T2[i]-T1[i]);
+		
+	
+			
+		
+			}
+			else
+			{
+			    R(0,0)=10000;
+			    R(1,1)=10000;
+			    R(2,2)=10000;
+			    R(3,3)=10000;
+			}
+		
+			if (stationary==true )
+			{
+			    Q(0,0)=0;
+			    Q(1,1)=0;
+			    Q(2,2)=0;
+			    Q(3,3)=0;
+			}
+			else
+			{
+			    Q(0,0)=100;
+			    Q(1,1)=100;
+			    Q(2,2)=100;
+			    Q(3,3)=100;
+			}
+
+			Matrix4f temp;
+			    
+			//Stage 1
+			ux=twist[i].linear.x*cos(yaw[i])-twist[i].linear.y*sin(yaw[i]);
+			uy=-twist[i].linear.y*cos(yaw[i])+twist[i].linear.x*sin(yaw[i]);
+			uz=twist[i].linear.z;
+		
+			vXTot=(b(2,0)+b(1,0)+b(0,0))/3;
+			vYTot=(b(2,1)+b(1,1)+b(0,1))/3;
+			vZTot=(b(2,2)+b(1,2)+b(0,2))/3;
+			//std::cout<<"\n Measured Velocity: \n"<<vXTot<<"\n";
+			// if (ux>1){
+			//     ux=1;
+			// }
+			// else if (ux<-1){
+			//     ux=-1;
+			// }
+			// if (uy>1){
+			//     uy=1;
+			// }
+			// else if (uy<-1){
+			//     uy=-1;
+			// }
+			// if (ux*maxVelFactor<vx && ux>0){
+			//     ux=0;
+			// }
+			// else if(ux*maxVelFactor>vx && ux<0){
+			//     ux=0;
+			// }
+		
+			// if (uy*maxVelFactor<vy && uy>0){
+			//     uy=0;
+			// }
+			// else if(uy*maxVelFactor>vy && uy<0){
+			//     uy=0;
+			// }    
+		
+		
+			// V << V(0)+ .6*ux/T,V(1)+.6*uy/T,V(2)+.6*uz/T;
+			// VZ << measurementTwist.linear.x,measurementTwist.linear.y,measurementTwist.linear.y;
+			 Z << measurementPose[i].pose.position.x,measurementPose[i].pose.position.y,measurementPose[i].pose.position.z,yaw[i];
+			// X << X(0)+ V(0)/T,X(1)+V(1)/T,X(2)+V(2)/T,X(3)+twist.angular.z/T;
+			
+				Xx << Xx(0)+ ux/T,Xx(1)+uy/T,Xx(2)+uz/T,Xx(3)+twist[i].angular.z/T;
+			
+
+
+
+			//Stage 2
+			if (got_pose_[i] == true)
+			{
+			    A << 1, 0,0, -twist[i].linear.x/T*sin(yaw[i])-twist[i].linear.y/T*cos(yaw[i]),0, 1,0, twist[i].linear.x/T*cos(yaw[i])+twist[i].linear.y/T*sin(yaw[i]),0, 0, 1,0, 0,0,0,-1;
+			    P = A*P*A.transpose() + W*Q*W.transpose();
+
+			    //Stage 3
+			    temp = (W*P*W.transpose() + W*R*W.transpose());
+			    K = P*W.transpose()*temp.inverse();
+
+			    //Stage 4
+			    Xx = Xx + K*(Z-Xx);
+
+			    //Stage 5
+			    P = (I - K*W)*P;
+			    V(0)=vXTot;
+			    V(1)=vYTot;
+			    V(2)=vZTot;
+			}
+
+			if (i>10){
+				V(0)=ux;
+				V(1)=uy;
+			}
+
+
+			    twistEstimation.transforms[i].transform.translation.x=V(0);
+			    twistEstimation.transforms[i].transform.translation.y=V(1);
+			    twistEstimation.transforms[i].transform.translation.z=V(2);
+
+			if (poseEstimation[i].pose.position.x==Xx(0) && poseEstimation[i].pose.position.y==Xx(1)){
+				numb[i]=numb[i]+1;
+			}
+			else{
+				numb[i]=0;
+			}
+			poseEstimation[i].pose.position.x = Xx(0);
+			poseEstimation[i].pose.position.y = Xx(1);
+			poseEstimation[i].pose.position.z = Xx(2);
+			poseEstimation[i].pose.orientation = tf::createQuaternionMsgFromYaw(Xx(3));
+
+			if (poseEstimation[i].header.frame_id.compare("obstacle")==0 || (i >0 && i<11) || (i>40&&i<44)){
+			poseEstimation[i].pose.position.x = Z(0);
+			poseEstimation[i].pose.position.y = Z(1);
+			poseEstimation[i].pose.position.z = Z(2);
+			poseEstimation[i].pose.orientation = tf::createQuaternionMsgFromYaw(Z(3));
+			}
+			if (Z(0)==0 &&Z(1)==0){
+			poseEstimation[i].pose.position.x = 0;
+			poseEstimation[i].pose.position.y = 0;
+			}
+
+			
+			gl_pub_.publish(poseEstimation[i]);
+
+			
+
+			poseEstimationTF.transforms[i].transform.translation.x=poseEstimation[i].pose.position.x;
+			poseEstimationTF.transforms[i].transform.translation.y=poseEstimation[i].pose.position.y;
+			poseEstimationTF.transforms[i].transform.translation.z=poseEstimation[i].pose.position.z;
+
+			poseEstimationTF.transforms[i].transform.rotation.x=poseEstimation[i].pose.orientation.x;
+			poseEstimationTF.transforms[i].transform.rotation.y=poseEstimation[i].pose.orientation.y;
+			poseEstimationTF.transforms[i].transform.rotation.z=poseEstimation[i].pose.orientation.z;
+			poseEstimationTF.transforms[i].transform.rotation.w=poseEstimation[i].pose.orientation.w;
+
+			poseEstimationTF.transforms[i].header.frame_id=poseEstimation[i].header.frame_id;
+
+			if (numb[i]>100){
+				poseEstimation[i].pose.position.x=0;
+				poseEstimation[i].pose.position.y=0;
+				poseEstimation[i].pose.position.z=0;
+				active[i]=false;
+
+			poseEstimationTF.transforms[i].transform.translation.x=0;
+			poseEstimationTF.transforms[i].transform.translation.y=0;
+			poseEstimationTF.transforms[i].transform.translation.z=0;
+				
+			}
+
+
+			//std::cout<<"\n Measured: \n"<<measurementPose[i]<<"\n";
+			//std::cout<<"Twist: \n"<<twist<<"\n";
+			//std::cout<<"Best Estimation\n"<<poseEstimation[i]<<"\n---------\n\n";
+			//std::cout<<"Yaw: "<<yaw[i]<<"\n---------\n\n";
+			//std::cout<<"--------------------------------------------------------------------";
+		       
+			    }else{
+
+			}
+			
+			
+			    
+			}
+		     vel_pub_.publish(twistEstimation);
+	             gl2_pub_.publish(poseEstimationTF);
+		     loop_rate.sleep();
+        }
+        
+}
+//END

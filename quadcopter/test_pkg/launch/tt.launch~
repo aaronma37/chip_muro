@@ -1,0 +1,70 @@
+<launch>
+<arg name="robot" default="donatello"/>
+<arg name="EKF_on" default="1"/>
+<arg name="hold_time" default="8.0"/>
+<arg name="resolution" default="1"/>
+<arg name="turn_speed" default="0.3"/>
+<arg name="send" default="1"/>
+<arg name="drive_speed" default="0.2"/>
+<arg name="angle_tolerance" default="0.5"/>
+<arg name="radius" default="50"/>
+<arg name="distance_tolerance" default="0.10"/>
+<arg name="show_cells_" default="false"/>
+
+<group ns="donatello">
+<param name="tf_prefix" value="$(arg robot)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter" output="screen">
+<param name="robot_name"	value="$(arg robot)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+<arg name="robot3" default="michelangelo"/>
+<group ns="michelangelo">
+<param name="tf_prefix" value="$(arg robot3)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot3)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter" output="screen">
+<param name="robot_name"	value="$(arg robot3)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+<arg name="robot4" default="ghiberti"/>
+<group ns="ghiberti">
+<param name="tf_prefix" value="$(arg robot4)"/>
+<!-- Communication EKF node -->
+<node pkg="turtlebot_deployment" type="inter_robot_communication" name="communication">
+<param name="robot_name" value="$(arg robot4)"/>
+<param name="EKF_switch" value="$(arg EKF_on)"/>
+
+</node>
+<!-- EKF -->
+<node pkg="turtlebot_deployment" type="ekf" name="ekf_filter" output="screen">
+<param name="robot_name"	value="$(arg robot4)"/>
+<param name="sendAll"	value="$(arg send)"/>
+</node>
+
+</group>
+
+
+
+
+
+<node pkg="test_pkg" type="quadcopter_ekf_multiple" name="quadcopter_ekf" output="screen">
+</node>
+</launch>

@@ -1,0 +1,132 @@
+#include <agent.h>
+
+// Note, in c++ class member are by default private
+<<<<<<< .mine
+
+Agent::Agent()
+=======
+Agent::Agent()
+>>>>>>> .r61069
+{
+    timestamp_ = ros::Time::now();
+    id_ = 0;
+    name_ = "not_defined";
+    distance_ = 0.0;
+    pose_.position.x = 0.0;
+    pose_.position.y = 0.0;
+    pose_.position.z = 0.0;
+
+    geometry_msgs::Quaternion quatMsg;
+    tf::Quaternion quatTf = tf::createIdentityQuaternion();
+    tf::quaternionTFToMsg(quatTf, quatMsg);
+    pose_.orientation = quatMsg;
+
+    distance_ = 0.0;
+} 
+
+Agent::Agent( std::string name = "not_defined")
+{
+    timestamp_ = ros::Time::now();
+    id_ = 0;
+    name_ = name;
+    distance_ = 0.0;
+    pose_.position.x = 0.0;
+    pose_.position.y = 0.0;
+    pose_.position.z = 0.0;
+
+    geometry_msgs::Quaternion quatMsg;
+    tf::Quaternion quatTf = tf::createIdentityQuaternion();
+    tf::quaternionTFToMsg(quatTf, quatMsg);
+    pose_.orientation = quatMsg;
+
+    // distance_ = 0.0;
+}
+
+Agent::Agent( int id )
+{
+    timestamp_ = ros::Time::now();
+    id_ = id;
+    name_ = "not_defined";
+    distance_ = 0.0;
+    pose_.position.x = 0.0;
+    pose_.position.y = 0.0;
+    pose_.position.z = 0.0;
+
+    geometry_msgs::Quaternion quatMsg;
+    tf::Quaternion quatTf = tf::createIdentityQuaternion();
+    tf::quaternionTFToMsg(quatTf, quatMsg);
+    pose_.orientation = quatMsg;
+
+    // distance_ = 0.0;
+}
+
+Agent::Agent( int id, turtlebot_deployment::PoseWithName poseWithName, double distance )
+{
+    timestamp_ = ros::Time::now();
+    id_ = id;
+    name_ = poseWithName.name;
+    pose_ = poseWithName.pose;
+    distance_ = distance;
+}
+
+Agent::Agent( int                   id,
+              std::string           name,
+              geometry_msgs::Pose   pose,
+              double                distance )
+{
+    timestamp_ = ros::Time::now();
+    id_ = id;
+    name_ = name;
+    pose_ = pose;
+    distance_ = distance;
+}
+
+void Agent::setId(int id)
+{
+    id_ = id;
+}
+
+void Agent::setName(std::string name)
+{
+    name_ = name;
+}
+
+void Agent::setPose(geometry_msgs::Pose pose)
+{
+    timestamp_ = ros::Time::now();
+    pose_ = pose;
+}
+
+void Agent::setDistance(double distance){
+    distance_ = distance;
+}
+
+int Agent::getId() const
+{
+    return id_;
+}
+
+std::string Agent::getName() const
+{
+    return name_;
+}
+
+geometry_msgs::Pose Agent::getPose() const
+{
+    return pose_;
+}
+
+//geometry_msgs::Pose::ConstPtr Agent::getPosePtr() const
+//{
+//    return &pose_;
+//}
+
+double Agent::getDistance() const
+{
+    return distance_;
+}
+
+ros::Duration Agent::getAge() const
+{
+    return ros::Time::now() - timestamp_;
+}

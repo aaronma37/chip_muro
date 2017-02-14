@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Camera -->
+  <include file="$(find turtlebot_camera_localization)/launch/uvcCameraLaunch.launch"/>
+
+  <!-- Localization -->
+  <node name="localization2" pkg="turtlebot_camera_localization" type="camera_localization_2"/>
+
+</launch>

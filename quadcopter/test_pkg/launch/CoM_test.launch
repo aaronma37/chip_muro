@@ -1,0 +1,9 @@
+<launch>
+
+<node pkg="test_pkg" type="CoM_sample_input_test" name="CoM_sample_input_test" output="screen">
+</node>
+
+<node pkg="test_pkg" type="CoMGeneratorRos" name="CoMGeneratorRos" output="screen">
+</node>
+
+</launch>

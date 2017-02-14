@@ -1,0 +1,7 @@
+<launch>
+<arg name="robot" default="$(env ROBOT)"/>
+  <group ns="$(arg robot)">
+    <param name="tf_prefix" value="$(arg robot)"/>
+	<node pkg="turtlebot_move_to_goal" name="keyboard" type="keyboard" output="screen"/>
+  </group>
+</launch>

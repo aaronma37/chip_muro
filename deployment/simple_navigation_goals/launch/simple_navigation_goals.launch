@@ -1,0 +1,15 @@
+<launch>
+
+<arg name="turn_speed" 		default="0.5"/>
+<arg name="drive_speed" 	default="0.4"/>
+<arg name="angle_tolerance" 	default="0.05"/>
+<arg name="distance_tolerance" 	default="0.05"/>
+
+<node pkg="turtlebot_move_to_goal" type="first_turn_then_move" name="navigation" output="screen">
+	<param name="turn_speed" 	value="$(arg turn_speed)"/>
+	<param name="drive_speed" 	value="$(arg drive_speed)"/>
+	<param name="angle_tolerance" 	value="$(arg angle_tolerance)"/>
+	<param name="distance_tolerance" value="$(arg distance_tolerance)"/>
+</node>
+
+</launch>

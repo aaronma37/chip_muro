@@ -1,0 +1,14 @@
+<launch>
+   
+  <!-- Camera -->
+  <include file="$(find turtlebot_camera_localization)/launch/usb_cam.launch"/>
+
+
+  <!-- Localization -->
+  <node name="localization" pkg="turtlebot_camera_localization" type="camera_localization"/>
+
+  <node name="odom_quat" pkg="turtlebot_camera_localization" type="tf_broadcaster"
+          args="/turtle1" />
+
+ 
+ </launch>

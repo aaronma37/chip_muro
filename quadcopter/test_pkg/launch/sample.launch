@@ -1,0 +1,7 @@
+<launch>
+
+<!-- EKF -->
+<node pkg="test_pkg" type="sample" name="sample" output="screen">
+</node>
+
+</launch>
