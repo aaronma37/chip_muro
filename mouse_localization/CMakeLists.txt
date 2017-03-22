@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
-  # mouse_localization
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,10 +106,9 @@ add_message_files(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES mouse_localization
+  #INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy std_msgs message_runtime mouse_events0 mouse_events1
-  DEPENDS system_lib
+  #DEPENDS system_lib
 )
 
 ###########
@@ -184,13 +182,13 @@ include_directories(
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(FILES
-  mouse_event.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+# install(FILES
+#  mouse_event.launch
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
 
-catkin_install_python(PROGRAMS scripts/mouseEvent0.py scripts/mouseEvent1.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# catkin_install_python(PROGRAMS scripts/mouseEvent0.py scripts/mouseEvent1.py
+  # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
 ## Testing ##
