@@ -7,7 +7,7 @@ import time
 
 from std_msgs.msg import String
 from std_msgs.msg import Float32
-from mouse_events0.msg import Event0
+from mouse_localization.msg import mouse_event0
 #
 # from geometry_msgs.msg import Pose2D
 from math import *
